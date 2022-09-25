@@ -10,6 +10,9 @@ use emulator::Emulator;
 struct Cli {
     #[clap(parse(from_os_str))]
     file_path: std::path::PathBuf,
+
+    #[clap(short, long)]
+    end_of_address: u32,
 }
 
 fn main() -> Result<()> {
@@ -25,7 +28,7 @@ fn main() -> Result<()> {
     }
 
     let mut emu = Emulator::new(&memory_data);
-    emu.run(100);
+    emu.run(args.end_of_address);
     println!("memory[84] = {}", emu.memory.data[84]);
 
     Ok(())

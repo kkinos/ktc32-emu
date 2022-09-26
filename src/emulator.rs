@@ -18,21 +18,22 @@ pub const CHECK_32BIT: u32 = 0x0000_0001;
 pub struct Emulator {
     pub memory: Memory,
     pub cpu: Cpu,
+    pub end_of_address: u32,
 }
 
 impl Emulator {
-    pub fn new(data: &Vec<u8>) -> Self {
+    pub fn new(data: &Vec<u8>, address: u32) -> Self {
         Emulator {
             memory: Memory::new(data),
             cpu: Cpu::new(),
+            end_of_address: address,
         }
     }
 
-    pub fn run(&mut self, end: u32) {
-        self.memory.init();
+    pub fn run(&mut self) {
         loop {
             self.step();
-            if self.cpu.pc >= end {
+            if self.cpu.pc >= self.end_of_address {
                 break;
             }
         }

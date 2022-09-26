@@ -1,6 +1,7 @@
 use anyhow::{Context, Ok, Result};
 use clap::Parser;
 use hex;
+use std::io::{self, Write};
 
 mod emulator;
 use emulator::Emulator;
@@ -27,9 +28,39 @@ fn main() -> Result<()> {
         memory_data.append(&mut h);
     }
 
-    let mut emu = Emulator::new(&memory_data);
-    emu.run(args.end_of_address);
-    println!("memory[84] = {}", emu.memory.data[84]);
+    let mut emu = Emulator::new(&memory_data, args.end_of_address);
+    emu.memory.init();
+
+    let mut input_command = String::new();
+    loop {
+        print!(">");
+        io::stdout().flush().unwrap();
+        io::stdin()
+            .read_line(&mut input_command)
+            .with_context(|| format!("failed to read command"))?;
+        let command = input_command.trim();
+
+        match command {
+            "run" | "r" => {
+                emu.run();
+                println!("memory[84] = {}", emu.memory.data[84]);
+                input_command.clear();
+            }
+            "step" | "s" => {
+                emu.step();
+                input_command.clear();
+            }
+
+            "finish" | "f" => {
+                println!("finish this emulator");
+                break;
+            }
+            _ => {
+                println!("command not found {}", command);
+                input_command.clear();
+            }
+        }
+    }
 
     Ok(())
 }

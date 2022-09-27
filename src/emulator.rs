@@ -19,6 +19,7 @@ pub struct Emulator {
     pub memory: Memory,
     pub cpu: Cpu,
     pub end_of_address: u32,
+    pub break_point: u32,
 }
 
 impl Emulator {
@@ -27,13 +28,20 @@ impl Emulator {
             memory: Memory::new(data),
             cpu: Cpu::new(),
             end_of_address: address,
+            break_point: address,
         }
     }
 
     pub fn run(&mut self) {
+        if self.cpu.pc > self.end_of_address {
+            return;
+        }
         loop {
             self.step();
-            if self.cpu.pc >= self.end_of_address {
+            if self.cpu.pc == self.break_point || self.cpu.pc == self.end_of_address {
+                self.step();
+                break;
+            } else if self.cpu.pc > self.end_of_address {
                 break;
             }
         }
@@ -42,7 +50,6 @@ impl Emulator {
     pub fn step(&mut self) {
         let word_32 = self.memory.read_data(self.cpu.pc);
         let word_16 = (word_32 & 0x0000FFFF) as u16;
-
         if (CHECK_32BIT & word_32) == 1 {
             self.cpu.pc += 4;
 
@@ -201,15 +208,17 @@ impl Emulator {
                 self.cpu.addi(inst_data.r1, inst_data.r2, inst_data.imm);
             }
             "SW" => self.memory.write_data(
-                self.cpu.register[inst_data.r2 as usize] + (inst_data.imm as u32),
+                self.cpu.register[inst_data.r2 as usize].wrapping_add(inst_data.imm as u32),
                 self.cpu.register[inst_data.r1 as usize],
             ),
-            "JMP" => self.cpu.pc += inst_data.imm as u32,
+            "JMP" => {
+                self.cpu.pc = self.cpu.pc.wrapping_add(inst_data.imm as u32);
+            }
             "JEQ" => {
                 if self.cpu.register[inst_data.r1 as usize]
                     == self.cpu.register[inst_data.r2 as usize]
                 {
-                    self.cpu.pc += inst_data.imm as u32
+                    self.cpu.pc = self.cpu.pc.wrapping_add(inst_data.imm as u32);
                 }
             }
 

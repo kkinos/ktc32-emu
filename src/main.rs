@@ -1,4 +1,4 @@
-use anyhow::{Context, Ok, Result};
+use anyhow::{Context, Result};
 use clap::Parser;
 use hex;
 use std::io::{self, Write};
@@ -33,7 +33,7 @@ fn main() -> Result<()> {
 
     let mut input_command = String::new();
     loop {
-        print!(">");
+        print!("> ");
         io::stdout().flush().unwrap();
         io::stdin()
             .read_line(&mut input_command)
@@ -41,17 +41,93 @@ fn main() -> Result<()> {
         let command = input_command.trim();
 
         match command {
-            "run" | "r" => {
+            "run" => {
                 emu.run();
-                println!("memory[84] = {}", emu.memory.data[84]);
                 input_command.clear();
             }
-            "step" | "s" => {
+            "s" => {
                 emu.step();
                 input_command.clear();
             }
+            "step" => {
+                input_command.clear();
+                print!("num > ");
+                io::stdout().flush().unwrap();
+                io::stdin()
+                    .read_line(&mut input_command)
+                    .with_context(|| format!("failed to read command"))?;
 
-            "finish" | "f" => {
+                match input_command.trim().parse::<u32>() {
+                    Ok(n) => {
+                        for _i in 0..n {
+                            emu.step();
+                        }
+                        input_command.clear();
+                    }
+                    Err(_) => {
+                        println!("invalid num");
+                        input_command.clear();
+                    }
+                };
+            }
+            "b" => {
+                input_command.clear();
+                print!("break point address > ");
+                io::stdout().flush().unwrap();
+                io::stdin()
+                    .read_line(&mut input_command)
+                    .with_context(|| format!("failed to read command"))?;
+
+                match input_command.trim().parse::<u32>() {
+                    Ok(n) => {
+                        emu.break_point = n;
+                        input_command.clear();
+                    }
+                    Err(_) => {
+                        println!("invalid num");
+                        input_command.clear();
+                    }
+                };
+            }
+            "m" | "mem" => {
+                input_command.clear();
+                print!("address > ");
+                io::stdout().flush().unwrap();
+                io::stdin()
+                    .read_line(&mut input_command)
+                    .with_context(|| format!("failed to read command"))?;
+
+                match input_command.trim().parse::<u32>() {
+                    Ok(n) => {
+                        println!("mem[{}] = {}", n, emu.memory.data[n as usize]);
+                        input_command.clear();
+                    }
+                    Err(_) => {
+                        println!("invalid address");
+                        input_command.clear();
+                    }
+                };
+            }
+            "r" | "reg" => {
+                input_command.clear();
+                print!("register num > ");
+                io::stdout().flush().unwrap();
+                io::stdin()
+                    .read_line(&mut input_command)
+                    .with_context(|| format!("failed to read command"))?;
+
+                match input_command.trim().parse::<u32>() {
+                    Ok(n) => {
+                        println!("register[{}] = {}", n, emu.cpu.register[n as usize]);
+                        input_command.clear();
+                    }
+                    Err(_) => {
+                        println!("invalid num");
+                        input_command.clear();
+                    }
+                };
+            }
+            "finish" => {
                 println!("finish this emulator");
                 break;
             }

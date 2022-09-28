@@ -70,7 +70,7 @@ fn main() -> Result<()> {
                     }
                 };
             }
-            "b" => {
+            "b" | "breakpoint" => {
                 input_command.clear();
                 print!("break point address > ");
                 io::stdout().flush().unwrap();
@@ -128,7 +128,7 @@ fn main() -> Result<()> {
                 };
             }
             "finish" => {
-                println!("finish this emulator");
+                println!("finish emulator");
                 break;
             }
             _ => {

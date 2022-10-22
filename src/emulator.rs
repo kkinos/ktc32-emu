@@ -50,6 +50,8 @@ impl Emulator {
     pub fn step(&mut self) {
         let word_32 = self.memory.read_data(self.cpu.pc);
         let word_16 = (word_32 & 0x0000FFFF) as u16;
+        let current_pc = self.cpu.pc;
+
         if (CHECK_32BIT & word_32) == 1 {
             self.cpu.pc += 4;
 
@@ -58,12 +60,7 @@ impl Emulator {
 
             println!(
                 " pc : 0x{:08x} inst : 0b{:032b} {} r{} r{} {}",
-                self.cpu.pc - 4,
-                word_32,
-                inst_data.inst,
-                inst_data.r1,
-                inst_data.r2,
-                inst_data.imm
+                current_pc, word_32, inst_data.inst, inst_data.r1, inst_data.r2, inst_data.imm
             );
         } else {
             self.cpu.pc += 2;
@@ -73,11 +70,7 @@ impl Emulator {
 
             println!(
                 " pc : 0x{:08x} inst : 0b{:016b} {} r{} r{}",
-                self.cpu.pc - 2,
-                word_16,
-                inst_data.inst,
-                inst_data.r1,
-                inst_data.r2
+                current_pc, word_16, inst_data.inst, inst_data.r1, inst_data.r2
             );
         }
     }

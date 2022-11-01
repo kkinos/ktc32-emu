@@ -12,28 +12,42 @@ impl Cpu {
         }
     }
 
-    pub fn mov(&mut self, rs1: u8, rs2: u8) {
-        self.register[rs1 as usize] = self.register[rs2 as usize];
-    }
-    pub fn add(&mut self, rs1: u8, rs2: u8) {
-        self.register[rs1 as usize] =
-            self.register[rs1 as usize].wrapping_add(self.register[rs2 as usize]);
-    }
-    pub fn sub(&mut self, rs1: u8, rs2: u8) {
-        self.register[rs1 as usize] =
-            self.register[rs1 as usize].wrapping_sub(self.register[rs2 as usize]);
+    pub fn read_register(&self, register_num: usize) -> u32 {
+        if register_num == 0 {
+            0
+        } else {
+            self.register[register_num]
+        }
     }
 
-    pub fn and(&mut self, rs1: u8, rs2: u8) {
-        self.register[rs1 as usize] = self.register[rs1 as usize] & self.register[rs2 as usize];
+    pub fn write_register(&mut self, register_num: usize, data: u32) {
+        if register_num != 0 {
+            self.register[register_num] = data;
+        }
     }
 
-    pub fn or(&mut self, rs1: u8, rs2: u8) {
-        self.register[rs1 as usize] = self.register[rs1 as usize] | self.register[rs2 as usize];
+    pub fn mov(&mut self, rd: u8, rs: u8) {
+        self.register[rd as usize] = self.register[rs as usize];
+    }
+    pub fn add(&mut self, rd: u8, rs: u8) {
+        self.register[rd as usize] =
+            self.register[rd as usize].wrapping_add(self.register[rs as usize]);
+    }
+    pub fn sub(&mut self, rd: u8, rs: u8) {
+        self.register[rd as usize] =
+            self.register[rd as usize].wrapping_sub(self.register[rs as usize]);
     }
 
-    pub fn slt(&mut self, rs1: u8, rs2: u8) {
-        self.register[rs1 as usize] = if self.register[rs1 as usize] < self.register[rs2 as usize] {
+    pub fn and(&mut self, rd: u8, rs: u8) {
+        self.register[rd as usize] = self.register[rd as usize] & self.register[rs as usize];
+    }
+
+    pub fn or(&mut self, rd: u8, rs: u8) {
+        self.register[rd as usize] = self.register[rd as usize] | self.register[rs as usize];
+    }
+
+    pub fn slt(&mut self, rd: u8, rs: u8) {
+        self.register[rd as usize] = if self.register[rd as usize] < self.register[rs as usize] {
             1
         } else {
             0

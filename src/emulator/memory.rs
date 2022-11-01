@@ -19,7 +19,7 @@ impl Memory {
         }
     }
 
-    pub fn read_data(&self, address: u32) -> u32 {
+    pub fn read_memory(&self, address: u32) -> u32 {
         let data = (self.data[(address + 3) as usize] as u32) << 24
             | (self.data[(address + 2) as usize] as u32) << 16
             | (self.data[(address + 1) as usize] as u32) << 8
@@ -27,7 +27,7 @@ impl Memory {
         return data;
     }
 
-    pub fn write_data(&mut self, address: u32, data: u32) {
+    pub fn write_memory(&mut self, address: u32, data: u32) {
         self.data[(address) as usize] = (data & 0x000000FF) as u8;
         self.data[(address + 1) as usize] = (data & 0x0000FF00) as u8;
         self.data[(address + 2) as usize] = (data & 0x00FF0000) as u8;

@@ -11,12 +11,12 @@ pub enum Format {
         rd: u8,
         rs: u8,
     },
-    IFormat16 {
+    I16Format {
         mnemonic: String,
         rd: u8,
         imm: u8,
     },
-    IFormat32 {
+    I32Format {
         mnemonic: String,
         rd: u8,
         rs: u8,
@@ -76,7 +76,7 @@ impl Emulator {
             self.execute(&format);
 
             match format {
-                Format::IFormat32 {
+                Format::I32Format {
                     mnemonic,
                     rd,
                     rs,
@@ -115,121 +115,121 @@ impl Emulator {
         let imm_j = ((word & 0xFFFFF800) as i32) >> 11;
 
         match opcode {
-            0b100000 => Format::IFormat32 {
+            0b100000 => Format::I32Format {
                 mnemonic: String::from("ADDI"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b100001 => Format::IFormat32 {
+            0b100001 => Format::I32Format {
                 mnemonic: String::from("ANDI"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b100010 => Format::IFormat32 {
+            0b100010 => Format::I32Format {
                 mnemonic: String::from("ORI"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b100011 => Format::IFormat32 {
+            0b100011 => Format::I32Format {
                 mnemonic: String::from("XORI"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b100100 => Format::IFormat32 {
+            0b100100 => Format::I32Format {
                 mnemonic: String::from("BEQ"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b100101 => Format::IFormat32 {
+            0b100101 => Format::I32Format {
                 mnemonic: String::from("BNQ"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b100110 => Format::IFormat32 {
+            0b100110 => Format::I32Format {
                 mnemonic: String::from("BLT"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b100111 => Format::IFormat32 {
+            0b100111 => Format::I32Format {
                 mnemonic: String::from("BGE"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b101000 => Format::IFormat32 {
+            0b101000 => Format::I32Format {
                 mnemonic: String::from("BLTU"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b101001 => Format::IFormat32 {
+            0b101001 => Format::I32Format {
                 mnemonic: String::from("BGEU"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b101010 => Format::IFormat32 {
+            0b101010 => Format::I32Format {
                 mnemonic: String::from("JALR"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b101011 => Format::IFormat32 {
+            0b101011 => Format::I32Format {
                 mnemonic: String::from("LB"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b101100 => Format::IFormat32 {
+            0b101100 => Format::I32Format {
                 mnemonic: String::from("LH"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b101101 => Format::IFormat32 {
+            0b101101 => Format::I32Format {
                 mnemonic: String::from("LBU"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b101110 => Format::IFormat32 {
+            0b101110 => Format::I32Format {
                 mnemonic: String::from("LHU"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b101111 => Format::IFormat32 {
+            0b101111 => Format::I32Format {
                 mnemonic: String::from("LW"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b110000 => Format::IFormat32 {
+            0b110000 => Format::I32Format {
                 mnemonic: String::from("LUI"),
                 rd: rd,
                 rs: 0,
                 imm: imm_i,
             },
-            0b110001 => Format::IFormat32 {
+            0b110001 => Format::I32Format {
                 mnemonic: String::from("SB"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b110010 => Format::IFormat32 {
+            0b110010 => Format::I32Format {
                 mnemonic: String::from("SH"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
-            0b110011 => Format::IFormat32 {
+            0b110011 => Format::I32Format {
                 mnemonic: String::from("SW"),
                 rd: rd,
                 rs: rs,
@@ -240,7 +240,7 @@ impl Emulator {
                 rd: rd,
                 imm: imm_j,
             },
-            _ => Format::IFormat32 {
+            _ => Format::I32Format {
                 mnemonic: String::from("UNKNOWN"),
                 rd: 0,
                 rs: 0,
@@ -311,17 +311,17 @@ impl Emulator {
                 rd: rd,
                 rs: rs,
             },
-            0b010000 => Format::IFormat16 {
+            0b010000 => Format::I16Format {
                 mnemonic: String::from("SLLI"),
                 rd: rd,
                 imm: imm,
             },
-            0b010001 => Format::IFormat16 {
+            0b010001 => Format::I16Format {
                 mnemonic: String::from("SRLI"),
                 rd: rd,
                 imm: imm,
             },
-            0b010010 => Format::IFormat16 {
+            0b010010 => Format::I16Format {
                 mnemonic: String::from("SRAI"),
                 rd: rd,
                 imm: imm,
@@ -346,7 +346,7 @@ impl Emulator {
 
                 _ => {}
             },
-            Format::IFormat32 {
+            Format::I32Format {
                 mnemonic,
                 rd,
                 rs,

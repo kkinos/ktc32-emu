@@ -87,6 +87,12 @@ impl Emulator {
                         current_pc, word_32, mnemonic, rd, rs, imm
                     )
                 }
+                Format::JFormat { mnemonic, rd, imm } => {
+                    println!(
+                        " pc : 0x{:08x} inst : 0b{:032b} {} r{}  {}",
+                        current_pc, word_32, mnemonic, rd, imm
+                    )
+                }
                 _ => {}
             }
         } else {
@@ -102,9 +108,16 @@ impl Emulator {
                         current_pc, word_16, mnemonic, rd, rs
                     );
                 }
+                Format::I16Format { mnemonic, rd, imm } => {
+                    println!(
+                        " pc : 0x{:08x} inst : 0b{:016b} {} r{} {}",
+                        current_pc, word_16, mnemonic, rd, imm
+                    );
+                }
                 _ => {}
             }
         }
+        self.cpu.register[0] = 0;
     }
 
     pub fn decode_32(word: u32) -> Format {
@@ -140,96 +153,108 @@ impl Emulator {
                 imm: imm_i,
             },
             0b100100 => Format::I32Format {
-                mnemonic: String::from("BEQ"),
+                mnemonic: String::from("SLTI"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b100101 => Format::I32Format {
-                mnemonic: String::from("BNQ"),
+                mnemonic: String::from("SLTIU"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b100110 => Format::I32Format {
-                mnemonic: String::from("BLT"),
+                mnemonic: String::from("BEQ"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b100111 => Format::I32Format {
-                mnemonic: String::from("BGE"),
+                mnemonic: String::from("BNQ"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b101000 => Format::I32Format {
-                mnemonic: String::from("BLTU"),
+                mnemonic: String::from("BLT"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b101001 => Format::I32Format {
-                mnemonic: String::from("BGEU"),
+                mnemonic: String::from("BGE"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b101010 => Format::I32Format {
-                mnemonic: String::from("JALR"),
+                mnemonic: String::from("BLTU"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b101011 => Format::I32Format {
-                mnemonic: String::from("LB"),
+                mnemonic: String::from("BGEU"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b101100 => Format::I32Format {
-                mnemonic: String::from("LH"),
+                mnemonic: String::from("JALR"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b101101 => Format::I32Format {
-                mnemonic: String::from("LBU"),
+                mnemonic: String::from("LB"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b101110 => Format::I32Format {
-                mnemonic: String::from("LHU"),
+                mnemonic: String::from("LH"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b101111 => Format::I32Format {
-                mnemonic: String::from("LW"),
+                mnemonic: String::from("LBU"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b110000 => Format::I32Format {
-                mnemonic: String::from("LUI"),
+                mnemonic: String::from("LHU"),
                 rd: rd,
                 rs: 0,
                 imm: imm_i,
             },
             0b110001 => Format::I32Format {
-                mnemonic: String::from("SB"),
+                mnemonic: String::from("LW"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b110010 => Format::I32Format {
-                mnemonic: String::from("SH"),
+                mnemonic: String::from("LUI"),
                 rd: rd,
                 rs: rs,
                 imm: imm_i,
             },
             0b110011 => Format::I32Format {
+                mnemonic: String::from("SB"),
+                rd: rd,
+                rs: rs,
+                imm: imm_i,
+            },
+            0b110100 => Format::I32Format {
+                mnemonic: String::from("SH"),
+                rd: rd,
+                rs: rs,
+                imm: imm_i,
+            },
+            0b110101 => Format::I32Format {
                 mnemonic: String::from("SW"),
                 rd: rd,
                 rs: rs,
@@ -342,10 +367,22 @@ impl Emulator {
                 "SUB" => self.cpu.sub(*rd, *rs),
                 "AND" => self.cpu.and(*rd, *rs),
                 "OR" => self.cpu.or(*rd, *rs),
+                "XOR" => self.cpu.xor(*rd, *rs),
+                "SLL" => self.cpu.sll(*rd, *rs),
+                "SRL" => self.cpu.srl(*rd, *rs),
+                "SRA" => self.cpu.sra(*rd, *rs),
                 "SLT" => self.cpu.slt(*rd, *rs),
-
+                "SLTU" => self.cpu.sltu(*rd, *rs),
                 _ => {}
             },
+
+            Format::I16Format { mnemonic, rd, imm } => match mnemonic.as_str() {
+                "SLLI" => self.cpu.slli(*rd, *imm),
+                "SRLI" => self.cpu.srli(*rd, *imm),
+                "SRAI" => self.cpu.srai(*rd, *imm),
+                _ => {}
+            },
+
             Format::I32Format {
                 mnemonic,
                 rd,
@@ -353,45 +390,99 @@ impl Emulator {
                 imm,
             } => match mnemonic.as_str() {
                 "ADDI" => self.cpu.addi(*rd, *rs, *imm),
+                "ANDI" => self.cpu.andi(*rd, *rs, *imm),
+                "ORI" => self.cpu.ori(*rd, *rs, *imm),
+                "XORI" => self.cpu.xori(*rd, *rs, *imm),
+                "SLTI" => self.cpu.slti(*rd, *rs, *imm),
+                "SLTIU" => self.cpu.sltiu(*rd, *rs, *imm),
                 "BEQ" => {
-                    if self.cpu.read_register(*rd as usize) == self.cpu.read_register(*rs as usize)
+                    if self.cpu.register[*rd as usize] == self.cpu.register[*rs as usize] {
+                        self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
+                    }
+                }
+                "BNQ" => {
+                    if self.cpu.register[*rd as usize] != self.cpu.register[*rs as usize] {
+                        self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
+                    }
+                }
+                "BLT" => {
+                    if (self.cpu.register[*rd as usize] as i32)
+                        < (self.cpu.register[*rs as usize] as i32)
                     {
                         self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
                     }
                 }
-                "JALR" => {
-                    self.cpu.write_register(*rd as usize, self.cpu.pc);
-                    self.cpu.pc = self
-                        .cpu
-                        .read_register(*rs as usize)
-                        .wrapping_add(*imm as u32);
+                "BGE" => {
+                    if (self.cpu.register[*rd as usize] as i32)
+                        >= (self.cpu.register[*rs as usize] as i32)
+                    {
+                        self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
+                    }
                 }
-                "LW" => self.cpu.write_register(
-                    *rd as usize,
-                    self.memory.read_memory(
-                        self.cpu
-                            .read_register(*rs as usize)
-                            .wrapping_add(*imm as u32),
-                    ),
+                "BLTU" => {
+                    if self.cpu.register[*rd as usize] < self.cpu.register[*rs as usize] {
+                        self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
+                    }
+                }
+                "BGEU" => {
+                    if self.cpu.register[*rd as usize] >= self.cpu.register[*rs as usize] {
+                        self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
+                    }
+                }
+                "JALR" => {
+                    self.cpu.register[*rd as usize] = self.cpu.pc;
+                    self.cpu.pc = self.cpu.register[*rs as usize].wrapping_add(*imm as u32);
+                }
+                "LB" => {
+                    self.cpu.register[*rd as usize] = ((self
+                        .memory
+                        .read_memory_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))
+                        as i8) as i32) as u32
+                }
+                "LH" => {
+                    self.cpu.register[*rd as usize] = ((self.memory.read_memory_16bit(
+                        self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
+                    ) as i16) as i32) as u32
+                }
+                "LBU" => {
+                    self.cpu.register[*rd as usize] = self
+                        .memory
+                        .read_memory_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))
+                        as u32
+                }
+                "LHU" => {
+                    self.cpu.register[*rd as usize] = self.memory.read_memory_16bit(
+                        self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
+                    ) as u32
+                }
+                "LW" => {
+                    self.cpu.register[*rd as usize] = self
+                        .memory
+                        .read_memory(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))
+                }
+                "LUI" => self.cpu.register[*rd as usize] = (*imm << 16) as u32,
+                "SB" => self.memory.write_memory_8bit(
+                    self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
+                    self.cpu.register[*rd as usize] as u8,
+                ),
+                "SH" => self.memory.write_memory_16bit(
+                    self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
+                    self.cpu.register[*rd as usize] as u16,
                 ),
                 "SW" => self.memory.write_memory(
-                    self.cpu
-                        .read_register(*rs as usize)
-                        .wrapping_add(*imm as u32),
-                    self.cpu.read_register(*rd as usize),
+                    self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
+                    self.cpu.register[*rd as usize],
                 ),
                 _ => {}
             },
 
             Format::JFormat { mnemonic, rd, imm } => match mnemonic.as_str() {
                 "JAL" => {
-                    self.cpu.write_register(*rd as usize, self.cpu.pc);
+                    self.cpu.register[*rd as usize] = self.cpu.pc;
                     self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
                 }
                 _ => {}
             },
-
-            _ => {}
         }
     }
 }

@@ -81,12 +81,20 @@ impl Emulator {
                     rd,
                     rs,
                     imm,
-                } => {
-                    println!(
-                        " pc : 0x{:08x} inst : 0b{:032b} {} r{} r{} {}",
-                        current_pc, word_32, mnemonic, rd, rs, imm
-                    )
-                }
+                } => match mnemonic.as_str() {
+                    "LUI" => {
+                        println!(
+                            " pc : 0x{:08x} inst : 0b{:032b} {} r{}  {}",
+                            current_pc, word_32, mnemonic, rd, imm
+                        )
+                    }
+                    _ => {
+                        println!(
+                            " pc : 0x{:08x} inst : 0b{:032b} {} r{} r{} {}",
+                            current_pc, word_32, mnemonic, rd, rs, imm
+                        )
+                    }
+                },
                 Format::JFormat { mnemonic, rd, imm } => {
                     println!(
                         " pc : 0x{:08x} inst : 0b{:032b} {} r{}  {}",

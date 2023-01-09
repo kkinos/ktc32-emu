@@ -11,119 +11,116 @@ use emulator::Emulator;
 struct Cli {
     #[clap(parse(from_os_str))]
     file_path: std::path::PathBuf,
-
-    #[clap(short, long)]
-    end_of_address: u32,
 }
 
 fn main() -> Result<()> {
     let args = Cli::parse();
-    let file = std::fs::read_to_string(&args.file_path)
+    let f = std::fs::read_to_string(&args.file_path)
         .with_context(|| format!("could not read file '{}'", &args.file_path.display()))?;
-    let file = file.split_whitespace().collect::<Vec<_>>();
 
-    let mut memory_data: Vec<u8> = vec![];
-    for s in file {
-        let mut h = hex::decode(s).context("could not decode to hex")?;
-        memory_data.append(&mut h);
+    let f = f.split_whitespace().collect::<Vec<_>>();
+    let mut program: Vec<u8> = vec![];
+    for line in f {
+        let mut hex = hex::decode(line).with_context(|| format!("could not decode to hex"))?;
+        program.append(&mut hex);
     }
 
-    let mut emu = Emulator::new(&memory_data, args.end_of_address);
-    emu.memory.init();
+    let mut emu = Emulator::new(program);
+    emu.ram.init();
 
-    let mut input_command = String::new();
+    let mut input = String::new();
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
         io::stdin()
-            .read_line(&mut input_command)
+            .read_line(&mut input)
             .with_context(|| format!("failed to read command"))?;
-        let command = input_command.trim();
+        let command = input.trim();
 
         match command {
             "run" => {
-                emu.run();
-                input_command.clear();
+                emu.run().with_context(|| format!("stop emulator"))?;
+                input.clear();
             }
             "s" => {
-                emu.step();
-                input_command.clear();
+                emu.step().with_context(|| format!("stop emulator"))?;
+                input.clear();
             }
             "step" => {
-                input_command.clear();
+                input.clear();
                 print!("num > ");
                 io::stdout().flush().unwrap();
                 io::stdin()
-                    .read_line(&mut input_command)
+                    .read_line(&mut input)
                     .with_context(|| format!("failed to read command"))?;
 
-                match input_command.trim().parse::<u32>() {
+                match input.trim().parse::<u32>() {
                     Ok(n) => {
                         for _i in 0..n {
-                            emu.step();
+                            emu.step().with_context(|| format!("stop emulator"))?;
                         }
-                        input_command.clear();
+                        input.clear();
                     }
                     Err(_) => {
                         println!("invalid num");
-                        input_command.clear();
+                        input.clear();
                     }
                 };
             }
             "b" | "breakpoint" => {
-                input_command.clear();
+                input.clear();
                 print!("break point address > ");
                 io::stdout().flush().unwrap();
                 io::stdin()
-                    .read_line(&mut input_command)
+                    .read_line(&mut input)
                     .with_context(|| format!("failed to read command"))?;
 
-                match input_command.trim().parse::<u32>() {
+                match input.trim().parse::<u32>() {
                     Ok(n) => {
                         emu.break_point = n;
-                        input_command.clear();
+                        input.clear();
                     }
                     Err(_) => {
                         println!("invalid num");
-                        input_command.clear();
+                        input.clear();
                     }
                 };
             }
             "m" | "mem" => {
-                input_command.clear();
+                input.clear();
                 print!("address > ");
                 io::stdout().flush().unwrap();
                 io::stdin()
-                    .read_line(&mut input_command)
+                    .read_line(&mut input)
                     .with_context(|| format!("failed to read command"))?;
 
-                match input_command.trim().parse::<u32>() {
+                match input.trim().parse::<u32>() {
                     Ok(n) => {
-                        println!("mem[{}] = {}", n, emu.memory.data[n as usize]);
-                        input_command.clear();
+                        println!("mem[{}] = {:08x}", n, emu.ram.memory_array[n as usize]);
+                        input.clear();
                     }
                     Err(_) => {
                         println!("invalid address");
-                        input_command.clear();
+                        input.clear();
                     }
                 };
             }
             "r" | "reg" => {
-                input_command.clear();
+                input.clear();
                 print!("register num > ");
                 io::stdout().flush().unwrap();
                 io::stdin()
-                    .read_line(&mut input_command)
+                    .read_line(&mut input)
                     .with_context(|| format!("failed to read command"))?;
 
-                match input_command.trim().parse::<u32>() {
+                match input.trim().parse::<u32>() {
                     Ok(n) => {
-                        println!("register[{}] = {}", n, emu.cpu.register[n as usize]);
-                        input_command.clear();
+                        println!("register[{}] = {:08x}", n, emu.cpu.register[n as usize]);
+                        input.clear();
                     }
                     Err(_) => {
                         println!("invalid num");
-                        input_command.clear();
+                        input.clear();
                     }
                 };
             }
@@ -133,7 +130,7 @@ fn main() -> Result<()> {
             }
             _ => {
                 println!("command not found {}", command);
-                input_command.clear();
+                input.clear();
             }
         }
     }

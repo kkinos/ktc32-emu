@@ -1,8 +1,9 @@
+use anyhow::{Ok, Result};
 mod cpu;
-mod memory;
+mod ram;
 
 use cpu::Cpu;
-use memory::Memory;
+use ram::Ram;
 
 #[derive(Debug)]
 pub enum Format {
@@ -33,39 +34,33 @@ pub const CHECK_32BIT_INST: u32 = 0x0000_0020;
 
 #[derive(Debug)]
 pub struct Emulator {
-    pub memory: Memory,
+    pub ram: Ram,
     pub cpu: Cpu,
-    pub end_of_address: u32,
     pub break_point: u32,
 }
 
 impl Emulator {
-    pub fn new(data: &Vec<u8>, address: u32) -> Self {
-        Emulator {
-            memory: Memory::new(data),
+    pub fn new(program: Vec<u8>) -> Self {
+        let bread_point = program.len() as u32;
+        Self {
+            ram: Ram::new(program),
             cpu: Cpu::new(),
-            end_of_address: address,
-            break_point: address,
+            break_point: bread_point,
         }
     }
 
-    pub fn run(&mut self) {
-        if self.cpu.pc > self.end_of_address {
-            return;
-        }
+    pub fn run(&mut self) -> Result<()> {
         loop {
-            self.step();
-            if self.cpu.pc == self.break_point || self.cpu.pc == self.end_of_address {
-                self.step();
-                break;
-            } else if self.cpu.pc > self.end_of_address {
+            self.step()?;
+            if self.cpu.pc == self.break_point || self.cpu.pc >= ram::MEMORY_SIZE {
                 break;
             }
         }
+        Ok(())
     }
 
-    pub fn step(&mut self) {
-        let word_32 = self.memory.read_memory(self.cpu.pc);
+    pub fn step(&mut self) -> Result<()> {
+        let word_32 = self.ram.read_data(self.cpu.pc)?;
         let word_16 = (word_32 & 0x0000FFFF) as u16;
         let current_pc = self.cpu.pc;
 
@@ -73,9 +68,7 @@ impl Emulator {
             self.cpu.pc += 4;
 
             let format = Self::decode_32(word_32);
-            self.execute(&format);
-
-            match format {
+            match &format {
                 Format::I32Format {
                     mnemonic,
                     rd,
@@ -103,13 +96,13 @@ impl Emulator {
                 }
                 _ => {}
             }
+            self.execute(&format)?;
         } else {
             self.cpu.pc += 2;
 
             let format = Self::decode_16(word_16);
-            self.execute(&format);
 
-            match format {
+            match &format {
                 Format::RFormat { mnemonic, rd, rs } => {
                     println!(
                         " pc : 0x{:08x} inst : 0b{:016b} {} r{} r{}",
@@ -124,8 +117,10 @@ impl Emulator {
                 }
                 _ => {}
             }
+            self.execute(&format)?;
         }
         self.cpu.register[0] = 0;
+        Ok(())
     }
 
     pub fn decode_32(word: u32) -> Format {
@@ -367,7 +362,7 @@ impl Emulator {
         }
     }
 
-    pub fn execute(&mut self, format: &Format) {
+    pub fn execute(&mut self, format: &Format) -> Result<()> {
         match format {
             Format::RFormat { mnemonic, rd, rs } => match mnemonic.as_str() {
                 "MOV" => self.cpu.mov(*rd, *rs),
@@ -443,44 +438,44 @@ impl Emulator {
                 }
                 "LB" => {
                     self.cpu.register[*rd as usize] = ((self
-                        .memory
-                        .read_memory_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))
+                        .ram
+                        .read_data_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?
                         as i8) as i32) as u32
                 }
                 "LH" => {
-                    self.cpu.register[*rd as usize] = ((self.memory.read_memory_16bit(
+                    self.cpu.register[*rd as usize] = ((self.ram.read_data_16bit(
                         self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
-                    ) as i16) as i32) as u32
+                    )? as i16) as i32) as u32
                 }
                 "LBU" => {
                     self.cpu.register[*rd as usize] = self
-                        .memory
-                        .read_memory_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))
+                        .ram
+                        .read_data_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?
                         as u32
                 }
                 "LHU" => {
-                    self.cpu.register[*rd as usize] = self.memory.read_memory_16bit(
+                    self.cpu.register[*rd as usize] = self.ram.read_data_16bit(
                         self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
-                    ) as u32
+                    )? as u32
                 }
                 "LW" => {
                     self.cpu.register[*rd as usize] = self
-                        .memory
-                        .read_memory(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))
+                        .ram
+                        .read_data(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?
                 }
                 "LUI" => self.cpu.register[*rd as usize] = (*imm << 16) as u32,
-                "SB" => self.memory.write_memory_8bit(
+                "SB" => self.ram.write_data_8bit(
                     self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
                     self.cpu.register[*rd as usize] as u8,
-                ),
-                "SH" => self.memory.write_memory_16bit(
+                )?,
+                "SH" => self.ram.write_data_16bit(
                     self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
                     self.cpu.register[*rd as usize] as u16,
-                ),
-                "SW" => self.memory.write_memory(
+                )?,
+                "SW" => self.ram.write_data(
                     self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
                     self.cpu.register[*rd as usize],
-                ),
+                )?,
                 _ => {}
             },
 
@@ -492,5 +487,6 @@ impl Emulator {
                 _ => {}
             },
         }
+        Ok(())
     }
 }

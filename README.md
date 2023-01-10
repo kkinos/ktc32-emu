@@ -1,5 +1,8 @@
 # ktc32-emu
 
+[![Rust](https://github.com/kinpoko/ktc32-emu/actions/workflows/rust.yml/badge.svg)](https://github.com/kinpoko/ktc32-emu/actions/workflows/rust.yml)
+![License](https://img.shields.io/github/license/kinpoko/ktc32-emu?color=blue)
+
 [KTC32](https://github.com/kinpoko/ktc32) emulator written in Rust.
 
 ## Usage

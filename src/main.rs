@@ -110,6 +110,50 @@ fn main() -> Result<()> {
                     }
                 };
             }
+            "wm" | "writemem" => {
+                input.clear();
+                print!("address > ");
+                io::stdout().flush().unwrap();
+                io::stdin()
+                    .read_line(&mut input)
+                    .with_context(|| format!("failed to read command"))?;
+
+                match input.trim().parse::<u32>() {
+                    Ok(n) => {
+                        if n >= emulator::memory::MEMORY_SIZE {
+                            println!("invalid address");
+                            input.clear();
+                        } else {
+                            input.clear();
+                            print!("data > ");
+                            io::stdout().flush().unwrap();
+                            io::stdin()
+                                .read_line(&mut input)
+                                .with_context(|| format!("failed to read command"))?;
+
+                            match input.trim().parse::<u8>() {
+                                Ok(d) => {
+                                    emu.memory.memory_array[n as usize] = d;
+                                    println!(
+                                        "mem[{}] = 0x{:08x}",
+                                        n, emu.memory.memory_array[n as usize]
+                                    );
+                                    input.clear();
+                                }
+                                Err(_) => {
+                                    println!("invalid data");
+                                    input.clear();
+                                }
+                            };
+                        }
+                    }
+                    Err(_) => {
+                        println!("invalid address");
+                        input.clear();
+                    }
+                };
+            }
+
             "r" | "reg" => {
                 input.clear();
                 print!("register num > ");
@@ -130,6 +174,49 @@ fn main() -> Result<()> {
                     }
                     Err(_) => {
                         println!("invalid num");
+                        input.clear();
+                    }
+                };
+            }
+            "wr" | "writereg" => {
+                input.clear();
+                print!("register num > ");
+                io::stdout().flush().unwrap();
+                io::stdin()
+                    .read_line(&mut input)
+                    .with_context(|| format!("failed to read command"))?;
+
+                match input.trim().parse::<u32>() {
+                    Ok(n) => {
+                        if n >= 32 {
+                            println!("invalid num");
+                            input.clear();
+                        } else {
+                            input.clear();
+                            print!("data > ");
+                            io::stdout().flush().unwrap();
+                            io::stdin()
+                                .read_line(&mut input)
+                                .with_context(|| format!("failed to read command"))?;
+
+                            match input.trim().parse::<u32>() {
+                                Ok(d) => {
+                                    emu.cpu.register[n as usize] = d;
+                                    println!(
+                                        "register[{}] = 0x{:08x}",
+                                        n, emu.cpu.register[n as usize]
+                                    );
+                                    input.clear();
+                                }
+                                Err(_) => {
+                                    println!("invalid data");
+                                    input.clear();
+                                }
+                            };
+                        }
+                    }
+                    Err(_) => {
+                        println!("invalid address");
                         input.clear();
                     }
                 };

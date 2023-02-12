@@ -19,14 +19,14 @@ impl Memory {
 
     pub fn read_data_8bit(&self, address: u32) -> Result<u8> {
         if address > MEMORY_SIZE {
-            return Err(anyhow!("out of memory"));
+            return Err(anyhow!("0x{:08x} is out of range of memory", address));
         }
         Ok(self.memory_array[address as usize])
     }
 
     pub fn read_data_16bit(&self, address: u32) -> Result<u16> {
         if address + 1 > MEMORY_SIZE {
-            return Err(anyhow!("out of memory"));
+            return Err(anyhow!("0x{:08x} is out of range of memory", address + 1));
         }
         Ok((self.memory_array[(address + 1) as usize] as u16) << 8
             | self.memory_array[address as usize] as u16)
@@ -34,7 +34,7 @@ impl Memory {
 
     pub fn read_data(&self, address: u32) -> Result<u32> {
         if address + 3 > MEMORY_SIZE {
-            return Err(anyhow!("out of memory"));
+            return Err(anyhow!("0x{:08x} is out of range of memory", address + 3));
         }
         Ok((self.memory_array[(address + 3) as usize] as u32) << 24
             | (self.memory_array[(address + 2) as usize] as u32) << 16
@@ -44,7 +44,7 @@ impl Memory {
 
     pub fn write_data_8bit(&mut self, address: u32, data: u8) -> Result<()> {
         if address > MEMORY_SIZE {
-            return Err(anyhow!("out of memory"));
+            return Err(anyhow!("0x{:08x} is out of range of memory", address));
         }
         self.memory_array[(address) as usize] = data;
         Ok(())
@@ -52,7 +52,7 @@ impl Memory {
 
     pub fn write_data_16bit(&mut self, address: u32, data: u16) -> Result<()> {
         if address + 1 > MEMORY_SIZE {
-            return Err(anyhow!("out of memory"));
+            return Err(anyhow!("0x{:08x} is out of range of memory", address + 1));
         }
         self.memory_array[(address) as usize] = (data & 0x00FF) as u8;
         self.memory_array[(address + 1) as usize] = (data & 0xFF00) as u8;
@@ -61,7 +61,7 @@ impl Memory {
 
     pub fn write_data(&mut self, address: u32, data: u32) -> Result<()> {
         if address + 3 > MEMORY_SIZE {
-            return Err(anyhow!("out of memory"));
+            return Err(anyhow!("0x{:08x} is out of range of memory", address + 3));
         }
         self.memory_array[(address) as usize] = (data & 0x000000FF) as u8;
         self.memory_array[(address + 1) as usize] = (data & 0x0000FF00) as u8;

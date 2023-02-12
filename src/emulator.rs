@@ -1,6 +1,6 @@
-use anyhow::{Ok, Result};
-mod cpu;
-mod memory;
+use anyhow::Result;
+pub mod cpu;
+pub mod memory;
 
 use cpu::Cpu;
 use memory::Memory;
@@ -96,7 +96,12 @@ impl Emulator {
                 }
                 _ => {}
             }
-            self.execute(&format)?;
+            match self.execute(&format) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!("{}", error)
+                }
+            }
         } else {
             self.cpu.pc += 2;
 
@@ -117,7 +122,12 @@ impl Emulator {
                 }
                 _ => {}
             }
-            self.execute(&format)?;
+            match self.execute(&format) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!("{}", error)
+                }
+            }
         }
         self.cpu.register[0] = 0;
         Ok(())

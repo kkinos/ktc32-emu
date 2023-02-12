@@ -96,8 +96,13 @@ fn main() -> Result<()> {
 
                 match input.trim().parse::<u32>() {
                     Ok(n) => {
-                        println!("mem[{}] = {:08x}", n, emu.memory.memory_array[n as usize]);
-                        input.clear();
+                        if n >= emulator::memory::MEMORY_SIZE {
+                            println!("invalid address");
+                            input.clear();
+                        } else {
+                            println!("mem[{}] = 0x{:08x}", n, emu.memory.memory_array[n as usize]);
+                            input.clear();
+                        }
                     }
                     Err(_) => {
                         println!("invalid address");
@@ -115,8 +120,13 @@ fn main() -> Result<()> {
 
                 match input.trim().parse::<u32>() {
                     Ok(n) => {
-                        println!("register[{}] = {:08x}", n, emu.cpu.register[n as usize]);
-                        input.clear();
+                        if n >= 32 {
+                            println!("invalid num");
+                            input.clear();
+                        } else {
+                            println!("register[{}] = 0x{:08x}", n, emu.cpu.register[n as usize]);
+                            input.clear();
+                        }
                     }
                     Err(_) => {
                         println!("invalid num");

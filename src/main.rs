@@ -26,7 +26,7 @@ fn main() -> Result<()> {
     }
 
     let mut emu = Emulator::new(program);
-    emu.ram.init();
+    emu.memory.init();
 
     let mut input = String::new();
     loop {
@@ -96,7 +96,7 @@ fn main() -> Result<()> {
 
                 match input.trim().parse::<u32>() {
                     Ok(n) => {
-                        println!("mem[{}] = {:08x}", n, emu.ram.memory_array[n as usize]);
+                        println!("mem[{}] = {:08x}", n, emu.memory.memory_array[n as usize]);
                         input.clear();
                     }
                     Err(_) => {

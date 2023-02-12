@@ -1,12 +1,12 @@
 use anyhow::{anyhow, Result};
 #[derive(Debug)]
-pub struct Ram {
+pub struct Memory {
     pub memory_array: Vec<u8>,
 }
 
-pub const MEMORY_SIZE: u32 = 512; // 512Byte
+pub const MEMORY_SIZE: u32 = 768; // 768Byte
 
-impl Ram {
+impl Memory {
     pub fn new(memory_array: Vec<u8>) -> Self {
         Self { memory_array }
     }

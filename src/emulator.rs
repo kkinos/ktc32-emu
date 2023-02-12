@@ -1,9 +1,9 @@
 use anyhow::{Ok, Result};
 mod cpu;
-mod ram;
+mod memory;
 
 use cpu::Cpu;
-use ram::Ram;
+use memory::Memory;
 
 #[derive(Debug)]
 pub enum Format {
@@ -34,7 +34,7 @@ pub const CHECK_32BIT_INST: u32 = 0x0000_0020;
 
 #[derive(Debug)]
 pub struct Emulator {
-    pub ram: Ram,
+    pub memory: Memory,
     pub cpu: Cpu,
     pub break_point: u32,
 }
@@ -43,7 +43,7 @@ impl Emulator {
     pub fn new(program: Vec<u8>) -> Self {
         let bread_point = program.len() as u32;
         Self {
-            ram: Ram::new(program),
+            memory: Memory::new(program),
             cpu: Cpu::new(),
             break_point: bread_point,
         }
@@ -52,7 +52,7 @@ impl Emulator {
     pub fn run(&mut self) -> Result<()> {
         loop {
             self.step()?;
-            if self.cpu.pc == self.break_point || self.cpu.pc >= ram::MEMORY_SIZE {
+            if self.cpu.pc == self.break_point || self.cpu.pc >= memory::MEMORY_SIZE {
                 break;
             }
         }
@@ -60,7 +60,7 @@ impl Emulator {
     }
 
     pub fn step(&mut self) -> Result<()> {
-        let word_32 = self.ram.read_data(self.cpu.pc)?;
+        let word_32 = self.memory.read_data(self.cpu.pc)?;
         let word_16 = (word_32 & 0x0000FFFF) as u16;
         let current_pc = self.cpu.pc;
 
@@ -438,41 +438,41 @@ impl Emulator {
                 }
                 "LB" => {
                     self.cpu.register[*rd as usize] = ((self
-                        .ram
+                        .memory
                         .read_data_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?
                         as i8) as i32) as u32
                 }
                 "LH" => {
-                    self.cpu.register[*rd as usize] = ((self.ram.read_data_16bit(
+                    self.cpu.register[*rd as usize] = ((self.memory.read_data_16bit(
                         self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
                     )? as i16) as i32) as u32
                 }
                 "LBU" => {
                     self.cpu.register[*rd as usize] = self
-                        .ram
+                        .memory
                         .read_data_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?
                         as u32
                 }
                 "LHU" => {
-                    self.cpu.register[*rd as usize] = self.ram.read_data_16bit(
+                    self.cpu.register[*rd as usize] = self.memory.read_data_16bit(
                         self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
                     )? as u32
                 }
                 "LW" => {
                     self.cpu.register[*rd as usize] = self
-                        .ram
+                        .memory
                         .read_data(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?
                 }
                 "LUI" => self.cpu.register[*rd as usize] = (*imm << 16) as u32,
-                "SB" => self.ram.write_data_8bit(
+                "SB" => self.memory.write_data_8bit(
                     self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
                     self.cpu.register[*rd as usize] as u8,
                 )?,
-                "SH" => self.ram.write_data_16bit(
+                "SH" => self.memory.write_data_16bit(
                     self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
                     self.cpu.register[*rd as usize] as u16,
                 )?,
-                "SW" => self.ram.write_data(
+                "SW" => self.memory.write_data(
                     self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
                     self.cpu.register[*rd as usize],
                 )?,

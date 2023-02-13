@@ -7,7 +7,7 @@ mod emulator;
 use emulator::Emulator;
 
 #[derive(Parser)]
-#[clap(version = "0.1", author = "kinpoko", about = "ktc32 emulator")]
+#[clap(version = "0.1", author = "kinpoko", about = "KTC32 emulator")]
 struct Cli {
     #[clap(parse(from_os_str))]
     file_path: std::path::PathBuf,

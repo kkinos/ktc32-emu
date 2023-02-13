@@ -5,21 +5,32 @@
 
 [KTC32](https://github.com/kinpoko/ktc32) emulator written in Rust.
 
+## Build
+
+```bash
+git clone https://github.com/kinpoko/ktc32-emu.git
+cargo build --release
+```
+
 ## Usage
 
 ```bash
+ktc32-emu -h
+ktc32-emu 0.1
+kinpoko
+KTC32 emulator
+
 USAGE:
-    ktc32-emu --end-of-address <END_OF_ADDRESS> <FILE_PATH>
+    ktc32-emu <FILE_PATH>
 
 ARGS:
     <FILE_PATH>
 
 OPTIONS:
-    -e, --end-of-address <END_OF_ADDRESS>
-    -h, --help                               Print help information
-    -V, --version                            Print version information
+    -h, --help       Print help information
+    -V, --version    Print version information
 ```
 
 ## Screenshot
 
-![screenshot](docs/screenshot.png)
+![screenshot](screenshot/screenshot.png)

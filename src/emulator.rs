@@ -129,7 +129,6 @@ impl Emulator {
                 }
             }
         }
-        self.cpu.register[0] = 0;
         Ok(())
     }
 
@@ -409,89 +408,88 @@ impl Emulator {
                 "SLTI" => self.cpu.slti(*rd, *rs, *imm),
                 "SLTIU" => self.cpu.sltiu(*rd, *rs, *imm),
                 "BEQ" => {
-                    if self.cpu.register[*rd as usize] == self.cpu.register[*rs as usize] {
+                    if self.cpu.get_reg(*rd) == self.cpu.get_reg(*rs) {
                         self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
                     }
                 }
                 "BNQ" => {
-                    if self.cpu.register[*rd as usize] != self.cpu.register[*rs as usize] {
+                    if self.cpu.get_reg(*rd) != self.cpu.get_reg(*rs) {
                         self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
                     }
                 }
                 "BLT" => {
-                    if (self.cpu.register[*rd as usize] as i32)
-                        < (self.cpu.register[*rs as usize] as i32)
-                    {
+                    if (self.cpu.get_reg(*rd) as i32) < (self.cpu.get_reg(*rs) as i32) {
                         self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
                     }
                 }
                 "BGE" => {
-                    if (self.cpu.register[*rd as usize] as i32)
-                        >= (self.cpu.register[*rs as usize] as i32)
-                    {
+                    if (self.cpu.get_reg(*rd) as i32) >= (self.cpu.get_reg(*rs) as i32) {
                         self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
                     }
                 }
                 "BLTU" => {
-                    if self.cpu.register[*rd as usize] < self.cpu.register[*rs as usize] {
+                    if self.cpu.get_reg(*rd) < self.cpu.get_reg(*rs) {
                         self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
                     }
                 }
                 "BGEU" => {
-                    if self.cpu.register[*rd as usize] >= self.cpu.register[*rs as usize] {
+                    if self.cpu.get_reg(*rd) >= self.cpu.get_reg(*rs) {
                         self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
                     }
                 }
                 "JALR" => {
-                    self.cpu.register[*rd as usize] = self.cpu.pc;
-                    self.cpu.pc = self.cpu.register[*rs as usize].wrapping_add(*imm as u32);
+                    self.cpu.set_reg(*rd, self.cpu.pc);
+                    self.cpu.pc = self.cpu.get_reg(*rs).wrapping_add(*imm as u32);
                 }
-                "LB" => {
-                    self.cpu.register[*rd as usize] = ((self
+                "LB" => self.cpu.set_reg(
+                    *rd,
+                    ((self
                         .memory
                         .read_data_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?
-                        as i8) as i32) as u32
-                }
-                "LH" => {
-                    self.cpu.register[*rd as usize] = ((self.memory.read_data_16bit(
+                        as i8) as i32) as u32,
+                ),
+                "LH" => self.cpu.set_reg(
+                    *rd,
+                    ((self.memory.read_data_16bit(
                         self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
-                    )? as i16) as i32) as u32
-                }
-                "LBU" => {
-                    self.cpu.register[*rd as usize] = self
-                        .memory
+                    )? as i16) as i32) as u32,
+                ),
+                "LBU" => self.cpu.set_reg(
+                    *rd,
+                    self.memory
                         .read_data_8bit(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?
-                        as u32
-                }
-                "LHU" => {
-                    self.cpu.register[*rd as usize] = self.memory.read_data_16bit(
+                        as u32,
+                ),
+                "LHU" => self.cpu.set_reg(
+                    *rd,
+                    self.memory.read_data_16bit(
                         self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
-                    )? as u32
-                }
-                "LW" => {
-                    self.cpu.register[*rd as usize] = self
-                        .memory
-                        .read_data(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?
-                }
-                "LUI" => self.cpu.register[*rd as usize] = (*imm << 16) as u32,
+                    )? as u32,
+                ),
+                "LW" => self.cpu.set_reg(
+                    *rd,
+                    self.memory
+                        .read_data(self.cpu.register[*rs as usize].wrapping_add(*imm as u32))?,
+                ),
+                "LUI" => self.cpu.set_reg(*rd, (*imm << 16) as u32),
                 "SB" => self.memory.write_data_8bit(
-                    self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
-                    self.cpu.register[*rd as usize] as u8,
+                    self.cpu.get_reg(*rs).wrapping_add(*imm as u32),
+                    self.cpu.get_reg(*rd) as u8,
                 )?,
                 "SH" => self.memory.write_data_16bit(
-                    self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
-                    self.cpu.register[*rd as usize] as u16,
+                    self.cpu.get_reg(*rs).wrapping_add(*imm as u32),
+                    self.cpu.get_reg(*rd) as u16,
                 )?,
                 "SW" => self.memory.write_data(
-                    self.cpu.register[*rs as usize].wrapping_add(*imm as u32),
-                    self.cpu.register[*rd as usize],
+                    self.cpu.get_reg(*rs).wrapping_add(*imm as u32),
+                    self.cpu.get_reg(*rd),
                 )?,
                 _ => {}
             },
 
             Format::JFormat { mnemonic, rd, imm } => match mnemonic.as_str() {
                 "JAL" => {
-                    self.cpu.register[*rd as usize] = self.cpu.pc;
+                    self.cpu.set_reg(*rd, self.cpu.pc);
                     self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);
                 }
                 _ => {}

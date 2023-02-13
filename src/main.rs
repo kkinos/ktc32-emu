@@ -162,13 +162,13 @@ fn main() -> Result<()> {
                     .read_line(&mut input)
                     .with_context(|| format!("failed to read command"))?;
 
-                match input.trim().parse::<u32>() {
+                match input.trim().parse::<u8>() {
                     Ok(n) => {
                         if n >= 32 {
                             println!("invalid num");
                             input.clear();
                         } else {
-                            println!("register[{}] = 0x{:08x}", n, emu.cpu.register[n as usize]);
+                            println!("register[{}] = 0x{:08x}", n, emu.cpu.get_reg(n));
                             input.clear();
                         }
                     }
@@ -186,7 +186,7 @@ fn main() -> Result<()> {
                     .read_line(&mut input)
                     .with_context(|| format!("failed to read command"))?;
 
-                match input.trim().parse::<u32>() {
+                match input.trim().parse::<u8>() {
                     Ok(n) => {
                         if n >= 32 {
                             println!("invalid num");
@@ -201,11 +201,8 @@ fn main() -> Result<()> {
 
                             match input.trim().parse::<u32>() {
                                 Ok(d) => {
-                                    emu.cpu.register[n as usize] = d;
-                                    println!(
-                                        "register[{}] = 0x{:08x}",
-                                        n, emu.cpu.register[n as usize]
-                                    );
+                                    emu.cpu.set_reg(n, d);
+                                    println!("register[{}] = 0x{:08x}", n, emu.cpu.get_reg(n));
                                     input.clear();
                                 }
                                 Err(_) => {

@@ -100,7 +100,7 @@ fn main() -> Result<()> {
                             println!("invalid address");
                             input.clear();
                         } else {
-                            println!("mem[{}] = 0x{:08x}", n, emu.memory.memory_array[n as usize]);
+                            println!("mem[{}] = 0x{:02x}", n, emu.memory.memory_array[n as usize]);
                             input.clear();
                         }
                     }
@@ -135,7 +135,7 @@ fn main() -> Result<()> {
                                 Ok(d) => {
                                     emu.memory.memory_array[n as usize] = d;
                                     println!(
-                                        "mem[{}] = 0x{:08x}",
+                                        "mem[{}] = 0x{:02x}",
                                         n, emu.memory.memory_array[n as usize]
                                     );
                                     input.clear();
@@ -217,6 +217,27 @@ fn main() -> Result<()> {
                         input.clear();
                     }
                 };
+            }
+            "h" | "help" => {
+                println!("run           : continue to execute until break point");
+                println!();
+                println!("s, step       : step execute");
+                println!();
+                println!("b, breakpoint : set breakpoint");
+                println!();
+                println!("m, mem        : display data in memory");
+                println!();
+                println!("wm, writemem  : write data to memory");
+                println!();
+                println!("r, reg        : display data in register");
+                println!();
+                println!("wr, writereg  : write data to register");
+                println!();
+                println!("h, help       : show this message");
+                println!();
+                println!("finish        : finish emulator");
+
+                input.clear();
             }
             "finish" => {
                 println!("finish emulator");

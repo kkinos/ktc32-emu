@@ -6,7 +6,8 @@ use cpu::Cpu;
 use memory::Memory;
 
 #[derive(Debug)]
-pub enum Format {
+#[allow(clippy::enum_variant_names)]
+pub enum Type {
     RFormat {
         mnemonic: String,
         rd: u8,
@@ -67,9 +68,9 @@ impl Emulator {
         if (CHECK_32BIT_INST & word_32) == 32 {
             self.cpu.pc += 4;
 
-            let format = Self::decode_32(word_32);
-            match &format {
-                Format::I32Format {
+            let inst = Self::decode_32(word_32);
+            match &inst {
+                Type::I32Format {
                     mnemonic,
                     rd,
                     rs,
@@ -88,7 +89,7 @@ impl Emulator {
                         )
                     }
                 },
-                Format::JFormat { mnemonic, rd, imm } => {
+                Type::JFormat { mnemonic, rd, imm } => {
                     println!(
                         " pc : 0x{:08x} inst : 0b{:032b} {} r{}  {}",
                         current_pc, word_32, mnemonic, rd, imm
@@ -96,7 +97,7 @@ impl Emulator {
                 }
                 _ => {}
             }
-            match self.execute(&format) {
+            match self.execute(&inst) {
                 Ok(_) => {}
                 Err(error) => {
                     println!("{}", error)
@@ -105,16 +106,16 @@ impl Emulator {
         } else {
             self.cpu.pc += 2;
 
-            let format = Self::decode_16(word_16);
+            let inst = Self::decode_16(word_16);
 
-            match &format {
-                Format::RFormat { mnemonic, rd, rs } => {
+            match &inst {
+                Type::RFormat { mnemonic, rd, rs } => {
                     println!(
                         " pc : 0x{:08x} inst : 0b{:016b} {} r{} r{}",
                         current_pc, word_16, mnemonic, rd, rs
                     );
                 }
-                Format::I16Format { mnemonic, rd, imm } => {
+                Type::I16Format { mnemonic, rd, imm } => {
                     println!(
                         " pc : 0x{:08x} inst : 0b{:016b} {} r{} {}",
                         current_pc, word_16, mnemonic, rd, imm
@@ -122,7 +123,7 @@ impl Emulator {
                 }
                 _ => {}
             }
-            match self.execute(&format) {
+            match self.execute(&inst) {
                 Ok(_) => {}
                 Err(error) => {
                     println!("{}", error)
@@ -132,7 +133,7 @@ impl Emulator {
         Ok(())
     }
 
-    pub fn decode_32(word: u32) -> Format {
+    pub fn decode_32(word: u32) -> Type {
         let opcode = (word & 0x0000003F) as u8;
         let rd = ((word & 0x000007C0) >> 6) as u8;
         let rs = ((word & 0x0000F800) >> 11) as u8;
@@ -140,144 +141,144 @@ impl Emulator {
         let imm_j = ((word & 0xFFFFF800) as i32) >> 11;
 
         match opcode {
-            0b100000 => Format::I32Format {
+            0b100000 => Type::I32Format {
                 mnemonic: String::from("ADDI"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b100001 => Format::I32Format {
+            0b100001 => Type::I32Format {
                 mnemonic: String::from("ANDI"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b100010 => Format::I32Format {
+            0b100010 => Type::I32Format {
                 mnemonic: String::from("ORI"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b100011 => Format::I32Format {
+            0b100011 => Type::I32Format {
                 mnemonic: String::from("XORI"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b100100 => Format::I32Format {
+            0b100100 => Type::I32Format {
                 mnemonic: String::from("SLTI"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b100101 => Format::I32Format {
+            0b100101 => Type::I32Format {
                 mnemonic: String::from("SLTIU"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b100110 => Format::I32Format {
+            0b100110 => Type::I32Format {
                 mnemonic: String::from("BEQ"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b100111 => Format::I32Format {
+            0b100111 => Type::I32Format {
                 mnemonic: String::from("BNQ"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b101000 => Format::I32Format {
+            0b101000 => Type::I32Format {
                 mnemonic: String::from("BLT"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b101001 => Format::I32Format {
+            0b101001 => Type::I32Format {
                 mnemonic: String::from("BGE"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b101010 => Format::I32Format {
+            0b101010 => Type::I32Format {
                 mnemonic: String::from("BLTU"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b101011 => Format::I32Format {
+            0b101011 => Type::I32Format {
                 mnemonic: String::from("BGEU"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b101100 => Format::I32Format {
+            0b101100 => Type::I32Format {
                 mnemonic: String::from("JALR"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b101101 => Format::I32Format {
+            0b101101 => Type::I32Format {
                 mnemonic: String::from("LB"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b101110 => Format::I32Format {
+            0b101110 => Type::I32Format {
                 mnemonic: String::from("LH"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b101111 => Format::I32Format {
+            0b101111 => Type::I32Format {
                 mnemonic: String::from("LBU"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b110000 => Format::I32Format {
+            0b110000 => Type::I32Format {
                 mnemonic: String::from("LHU"),
-                rd: rd,
+                rd,
                 rs: 0,
                 imm: imm_i,
             },
-            0b110001 => Format::I32Format {
+            0b110001 => Type::I32Format {
                 mnemonic: String::from("LW"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b110010 => Format::I32Format {
+            0b110010 => Type::I32Format {
                 mnemonic: String::from("LUI"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b110011 => Format::I32Format {
+            0b110011 => Type::I32Format {
                 mnemonic: String::from("SB"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b110100 => Format::I32Format {
+            0b110100 => Type::I32Format {
                 mnemonic: String::from("SH"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b110101 => Format::I32Format {
+            0b110101 => Type::I32Format {
                 mnemonic: String::from("SW"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
                 imm: imm_i,
             },
-            0b111111 => Format::JFormat {
+            0b111111 => Type::JFormat {
                 mnemonic: String::from("JAL"),
-                rd: rd,
+                rd,
                 imm: imm_j,
             },
-            _ => Format::I32Format {
+            _ => Type::I32Format {
                 mnemonic: String::from("UNKNOWN"),
                 rd: 0,
                 rs: 0,
@@ -286,84 +287,84 @@ impl Emulator {
         }
     }
 
-    pub fn decode_16(word: u16) -> Format {
+    pub fn decode_16(word: u16) -> Type {
         let opcode = (word & 0x003F) as u8;
         let rd = ((word & 0x07C0) >> 6) as u8;
         let rs = ((word & 0xF800) >> 11) as u8;
         let imm = ((word & 0xF800) >> 11) as u8;
 
         match opcode {
-            0b000000 => Format::RFormat {
+            0b000000 => Type::RFormat {
                 mnemonic: String::from("MOV"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b000001 => Format::RFormat {
+            0b000001 => Type::RFormat {
                 mnemonic: String::from("ADD"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b000010 => Format::RFormat {
+            0b000010 => Type::RFormat {
                 mnemonic: String::from("SUB"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b000011 => Format::RFormat {
+            0b000011 => Type::RFormat {
                 mnemonic: String::from("AND"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b000100 => Format::RFormat {
+            0b000100 => Type::RFormat {
                 mnemonic: String::from("OR"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b000101 => Format::RFormat {
+            0b000101 => Type::RFormat {
                 mnemonic: String::from("XOR"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b000110 => Format::RFormat {
+            0b000110 => Type::RFormat {
                 mnemonic: String::from("SLL"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b000111 => Format::RFormat {
+            0b000111 => Type::RFormat {
                 mnemonic: String::from("SRL"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b001000 => Format::RFormat {
+            0b001000 => Type::RFormat {
                 mnemonic: String::from("SRA"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b001001 => Format::RFormat {
+            0b001001 => Type::RFormat {
                 mnemonic: String::from("SLT"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b001010 => Format::RFormat {
+            0b001010 => Type::RFormat {
                 mnemonic: String::from("SLTU"),
-                rd: rd,
-                rs: rs,
+                rd,
+                rs,
             },
-            0b010000 => Format::I16Format {
+            0b010000 => Type::I16Format {
                 mnemonic: String::from("SLLI"),
-                rd: rd,
-                imm: imm,
+                rd,
+                imm,
             },
-            0b010001 => Format::I16Format {
+            0b010001 => Type::I16Format {
                 mnemonic: String::from("SRLI"),
-                rd: rd,
-                imm: imm,
+                rd,
+                imm,
             },
-            0b010010 => Format::I16Format {
+            0b010010 => Type::I16Format {
                 mnemonic: String::from("SRAI"),
-                rd: rd,
-                imm: imm,
+                rd,
+                imm,
             },
-            _ => Format::RFormat {
+            _ => Type::RFormat {
                 mnemonic: String::from("UNKNOWN"),
                 rd: 0,
                 rs: 0,
@@ -371,9 +372,10 @@ impl Emulator {
         }
     }
 
-    pub fn execute(&mut self, format: &Format) -> Result<()> {
+    #[allow(clippy::single_match)]
+    pub fn execute(&mut self, format: &Type) -> Result<()> {
         match format {
-            Format::RFormat { mnemonic, rd, rs } => match mnemonic.as_str() {
+            Type::RFormat { mnemonic, rd, rs } => match mnemonic.as_str() {
                 "MOV" => self.cpu.mov(*rd, *rs),
                 "ADD" => self.cpu.add(*rd, *rs),
                 "SUB" => self.cpu.sub(*rd, *rs),
@@ -388,14 +390,14 @@ impl Emulator {
                 _ => {}
             },
 
-            Format::I16Format { mnemonic, rd, imm } => match mnemonic.as_str() {
+            Type::I16Format { mnemonic, rd, imm } => match mnemonic.as_str() {
                 "SLLI" => self.cpu.slli(*rd, *imm),
                 "SRLI" => self.cpu.srli(*rd, *imm),
                 "SRAI" => self.cpu.srai(*rd, *imm),
                 _ => {}
             },
 
-            Format::I32Format {
+            Type::I32Format {
                 mnemonic,
                 rd,
                 rs,
@@ -487,7 +489,7 @@ impl Emulator {
                 _ => {}
             },
 
-            Format::JFormat { mnemonic, rd, imm } => match mnemonic.as_str() {
+            Type::JFormat { mnemonic, rd, imm } => match mnemonic.as_str() {
                 "JAL" => {
                     self.cpu.set_reg(*rd, self.cpu.pc);
                     self.cpu.pc = self.cpu.pc.wrapping_add(*imm as u32);

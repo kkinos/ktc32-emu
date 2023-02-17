@@ -66,20 +66,12 @@ impl Cpu {
     }
 
     pub fn slt(&mut self, rd: u8, rs: u8) {
-        let data = if (self.get_reg(rd) as i32) < (self.get_reg(rs) as i32) {
-            1
-        } else {
-            0
-        };
+        let data = u32::from((self.get_reg(rd) as i32) < (self.get_reg(rs) as i32));
         self.set_reg(31, data);
     }
 
     pub fn sltu(&mut self, rd: u8, rs: u8) {
-        let data = if self.get_reg(rd) < self.get_reg(rs) {
-            1
-        } else {
-            0
-        };
+        let data = u32::from(self.get_reg(rd) < self.get_reg(rs));
         self.set_reg(31, data)
     }
 
@@ -113,19 +105,11 @@ impl Cpu {
         self.set_reg(rd, data);
     }
     pub fn slti(&mut self, rd: u8, rs: u8, imm: i32) {
-        let data = if (self.get_reg(rs) as i32) < imm {
-            1
-        } else {
-            0
-        };
+        let data = u32::from((self.get_reg(rs) as i32) < imm);
         self.set_reg(rd, data)
     }
     pub fn sltiu(&mut self, rd: u8, rs: u8, imm: i32) {
-        let data = if self.get_reg(rs) < (imm as u32) {
-            1
-        } else {
-            0
-        };
+        let data = u32::from(self.get_reg(rs) < (imm as u32));
         self.set_reg(rd, data)
     }
 }

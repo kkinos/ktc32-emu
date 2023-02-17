@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
 use clap::Parser;
-use hex;
 use std::io::{self, Write};
 
 mod emulator;
@@ -21,7 +20,7 @@ fn main() -> Result<()> {
     let f = f.split_whitespace().collect::<Vec<_>>();
     let mut program: Vec<u8> = vec![];
     for line in f {
-        let mut hex = hex::decode(line).with_context(|| format!("could not decode to hex"))?;
+        let mut hex = hex::decode(line).with_context(|| "could not decode to hex".to_string())?;
         program.append(&mut hex);
     }
 
@@ -34,16 +33,16 @@ fn main() -> Result<()> {
         io::stdout().flush().unwrap();
         io::stdin()
             .read_line(&mut input)
-            .with_context(|| format!("failed to read command"))?;
+            .with_context(|| "failed to read command".to_string())?;
         let command = input.trim();
 
         match command {
             "run" => {
-                emu.run().with_context(|| format!("stop emulator"))?;
+                emu.run().with_context(|| "stop emulator".to_string())?;
                 input.clear();
             }
             "s" => {
-                emu.step().with_context(|| format!("stop emulator"))?;
+                emu.step().with_context(|| "stop emulator".to_string())?;
                 input.clear();
             }
             "step" => {
@@ -52,12 +51,12 @@ fn main() -> Result<()> {
                 io::stdout().flush().unwrap();
                 io::stdin()
                     .read_line(&mut input)
-                    .with_context(|| format!("failed to read command"))?;
+                    .with_context(|| "failed to read command".to_string())?;
 
                 match input.trim().parse::<u32>() {
                     Ok(n) => {
                         for _i in 0..n {
-                            emu.step().with_context(|| format!("stop emulator"))?;
+                            emu.step().with_context(|| "stop emulator".to_string())?;
                         }
                         input.clear();
                     }
@@ -73,7 +72,7 @@ fn main() -> Result<()> {
                 io::stdout().flush().unwrap();
                 io::stdin()
                     .read_line(&mut input)
-                    .with_context(|| format!("failed to read command"))?;
+                    .with_context(|| "failed to read command".to_string())?;
 
                 match input.trim().parse::<u32>() {
                     Ok(n) => {
@@ -92,7 +91,7 @@ fn main() -> Result<()> {
                 io::stdout().flush().unwrap();
                 io::stdin()
                     .read_line(&mut input)
-                    .with_context(|| format!("failed to read command"))?;
+                    .with_context(|| "failed to read command".to_string())?;
 
                 match input.trim().parse::<u32>() {
                     Ok(n) => {
@@ -116,7 +115,7 @@ fn main() -> Result<()> {
                 io::stdout().flush().unwrap();
                 io::stdin()
                     .read_line(&mut input)
-                    .with_context(|| format!("failed to read command"))?;
+                    .with_context(|| "failed to read command".to_string())?;
 
                 match input.trim().parse::<u32>() {
                     Ok(n) => {
@@ -129,7 +128,7 @@ fn main() -> Result<()> {
                             io::stdout().flush().unwrap();
                             io::stdin()
                                 .read_line(&mut input)
-                                .with_context(|| format!("failed to read command"))?;
+                                .with_context(|| "failed to read command".to_string())?;
 
                             match input.trim().parse::<u8>() {
                                 Ok(d) => {
@@ -160,7 +159,7 @@ fn main() -> Result<()> {
                 io::stdout().flush().unwrap();
                 io::stdin()
                     .read_line(&mut input)
-                    .with_context(|| format!("failed to read command"))?;
+                    .with_context(|| "failed to read command".to_string())?;
 
                 match input.trim().parse::<u8>() {
                     Ok(n) => {
@@ -184,7 +183,7 @@ fn main() -> Result<()> {
                 io::stdout().flush().unwrap();
                 io::stdin()
                     .read_line(&mut input)
-                    .with_context(|| format!("failed to read command"))?;
+                    .with_context(|| "failed to read command".to_string())?;
 
                 match input.trim().parse::<u8>() {
                     Ok(n) => {
@@ -197,7 +196,7 @@ fn main() -> Result<()> {
                             io::stdout().flush().unwrap();
                             io::stdin()
                                 .read_line(&mut input)
-                                .with_context(|| format!("failed to read command"))?;
+                                .with_context(|| "failed to read command".to_string())?;
 
                             match input.trim().parse::<u32>() {
                                 Ok(d) => {

@@ -3,7 +3,7 @@
 [![Rust](https://github.com/kinpoko/ktc32-emu/actions/workflows/rust.yml/badge.svg)](https://github.com/kinpoko/ktc32-emu/actions/workflows/rust.yml)
 ![License](https://img.shields.io/github/license/kinpoko/ktc32-emu?color=blue)
 
-[KTC32](https://github.com/kinpoko/ktc32) emulator written in Rust.
+ktc32-emu is an emulator written in Rust for [KTC32](https://github.com/kinpoko/ktc32), a hobby 32-bit CPU implemented in SystemVerilog.
 
 ## Build
 
@@ -31,6 +31,6 @@ OPTIONS:
     -V, --version    Print version information
 ```
 
-## Screenshot
+## Demo
 
-![screenshot](screenshot/screenshot.png)
+![demo](gif/demo.gif)
